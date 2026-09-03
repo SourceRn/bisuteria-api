@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import clientesRoutes from "./routes/clientesRoutes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
+import interaccionesRoutes from "./routes/interaccionesRoutes.js";
 
 export const app = express();
 
@@ -14,8 +15,8 @@ app.get("/health", (req, res) => {
 });
 
 app.use("/clientes", clientesRoutes);
+app.use("/interacciones", interaccionesRoutes);
 
-// TODO: cuando lleguemos a interacciones -> app.use("/interacciones", interaccionesRoutes)
 // TODO: cuando lleguemos a auth -> app.use("/auth", authRoutes)
 // TODO: cuando lleguemos a metricas -> app.use("/metricas", metricasRoutes)
 
