@@ -3,6 +3,7 @@ import cors from "cors";
 import clientesRoutes from "./routes/clientesRoutes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import interaccionesRoutes from "./routes/interaccionesRoutes.js";
+import metricasRoutes from "./routes/metricasRoutes.js";
 
 export const app = express();
 
@@ -16,9 +17,9 @@ app.get("/health", (req, res) => {
 
 app.use("/clientes", clientesRoutes);
 app.use("/interacciones", interaccionesRoutes);
+app.use("/metricas", metricasRoutes);
 
 // TODO: cuando lleguemos a auth -> app.use("/auth", authRoutes)
-// TODO: cuando lleguemos a metricas -> app.use("/metricas", metricasRoutes)
 
 // 404 para rutas no definidas
 app.use((req, res) => {
