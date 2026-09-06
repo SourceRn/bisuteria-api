@@ -19,7 +19,7 @@ app.use("/clientes", clientesRoutes);
 app.use("/interacciones", interaccionesRoutes);
 app.use("/metricas", metricasRoutes);
 
-// TODO: cuando lleguemos a auth -> app.use("/auth", authRoutes)
+// TODO: cuando lleguemos a auth -> app.use("/auth", authRoutes) 
 
 // 404 para rutas no definidas
 app.use((req, res) => {
