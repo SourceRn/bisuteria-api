@@ -5,6 +5,7 @@ import { errorHandler } from "./middleware/errorHandler.js";
 import interaccionesRoutes from "./routes/interaccionesRoutes.js";
 import metricasRoutes from "./routes/metricasRoutes.js";
 import usuariosRoutes from "./routes/usuariosRoutes.js";
+import evaluacionesRoutes from "./routes/evaluacionesRoutes.js";
 
 export const app = express();
 
@@ -20,6 +21,7 @@ app.use("/clientes", clientesRoutes);
 app.use("/interacciones", interaccionesRoutes);
 app.use("/metricas", metricasRoutes);
 app.use("/usuarios", usuariosRoutes);
+app.use("/evaluaciones", evaluacionesRoutes);
 
 // TODO: cuando lleguemos a auth -> app.use("/auth", authRoutes) 
 

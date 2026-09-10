@@ -10,6 +10,7 @@ export const crearInteraccionSchema = z.object({
     message: `tipo debe ser una de: ${TIPOS.join(", ")}`,
   }),
   descripcion: z.string().trim().optional().or(z.literal("")),
+  fecha: z.string().datetime({ message: "fecha debe ser una fecha ISO valida" }).optional(),
 });
 
 export const TIPOS_VALIDOS = TIPOS;
