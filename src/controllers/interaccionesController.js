@@ -31,7 +31,11 @@ export const listarInteraccionesDeCliente = asyncHandler(async (req, res) => {
   }
 
   const { rows } = await pool.query(
-    "select * from interacciones where cliente_id = $1 order by fecha desc",
+    `select i.*, u.nombre as usuario_nombre
+     from interacciones i
+     left join usuarios u on u.id = i.usuario_id
+     where i.cliente_id = $1
+     order by i.fecha desc`,
     [id]
   );
 

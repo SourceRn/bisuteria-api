@@ -6,6 +6,7 @@ import interaccionesRoutes from "./routes/interaccionesRoutes.js";
 import metricasRoutes from "./routes/metricasRoutes.js";
 import usuariosRoutes from "./routes/usuariosRoutes.js";
 import evaluacionesRoutes from "./routes/evaluacionesRoutes.js";
+import pedidosRoutes from "./routes/pedidosRoutes.js";
 
 export const app = express();
 
@@ -22,6 +23,7 @@ app.use("/interacciones", interaccionesRoutes);
 app.use("/metricas", metricasRoutes);
 app.use("/usuarios", usuariosRoutes);
 app.use("/evaluaciones", evaluacionesRoutes);
+app.use("/pedidos", pedidosRoutes);
 
 // TODO: cuando lleguemos a auth -> app.use("/auth", authRoutes) 
 
