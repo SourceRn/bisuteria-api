@@ -26,10 +26,14 @@ export const requireAuth = asyncHandler(async (req, res, next) => {
   );
 
   if (rows.length === 0) {
-    throw new ApiError(403, "Este usuario no tiene acceso al CRM");
+  throw new ApiError(403, "Este usuario no tiene acceso al CRM");
   }
 
-  req.usuario = rows[0]; // { id, nombre, correo, rol, auth_id, ... }
+  if (!rows[0].activo) {
+    throw new ApiError(403, "Tu cuenta ha sido desactivada. Contacta a un administrador.");
+  }
+
+  req.usuario = rows[0];
   next();
 });
 

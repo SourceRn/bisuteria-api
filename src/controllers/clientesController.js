@@ -16,6 +16,27 @@ export const crearCliente = asyncHandler(async (req, res) => {
   res.status(201).json(rows[0]);
 });
 
+// GET /clientes/existe?correo=...  — PUBLICA, minima: solo confirma existencia + id.
+// No expone el resto de los campos del cliente (eso requiere login).
+export const verificarClienteExistente = asyncHandler(async (req, res) => {
+  const { correo } = req.query;
+
+  if (!correo) {
+    throw new ApiError(400, "Falta el parametro correo");
+  }
+
+  const { rows } = await pool.query(
+    "select id from clientes where correo = $1",
+    [correo]
+  );
+
+  if (rows.length === 0) {
+    return res.json({ existe: false });
+  }
+
+  res.json({ existe: true, id: rows[0].id });
+});
+
 // GET /clientes?buscar=texto&estado=activo&etapa=Prospecto
 export const listarClientes = asyncHandler(async (req, res) => {
   const { buscar, estado, etapa } = req.query;

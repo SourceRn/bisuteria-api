@@ -10,6 +10,7 @@ import pedidosRoutes from "./routes/pedidosRoutes.js";
 import productosRoutes from "./routes/productosRoutes.js";
 import proveedoresRoutes from "./routes/proveedoresRoutes.js";
 import movimientosRoutes from "./routes/movimientosRoutes.js";
+import clientesAuthRoutes from "./routes/clientesAuthRoutes.js";
 
 export const app = express();
 
@@ -21,6 +22,7 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
+app.use("/clientes", clientesAuthRoutes); // rutas especificas primero: /vincular-cuenta, /me, /me/pedidos
 app.use("/clientes", clientesRoutes);
 app.use("/interacciones", interaccionesRoutes);
 app.use("/metricas", metricasRoutes);
