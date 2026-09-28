@@ -6,10 +6,10 @@ export const crearProductoSchema = z.object({
   nombre: z.string().trim().min(2, "El nombre debe tener al menos 2 caracteres"),
   descripcion: z.string().trim().optional().or(z.literal("")),
   categoria: z.string().trim().optional().or(z.literal("")),
-  stock_actual: z.number().int().min(0).optional(),
-  stock_minimo: z.number().int().min(0).optional(),
+  stock_actual: z.coerce.number().int().min(0).optional(),
+  stock_minimo: z.coerce.number().int().min(0).optional(),
   proveedor_id: z.string().uuid("proveedor_id debe ser un uuid valido").optional().nullable(),
-  costo_unitario: z.number().min(0).optional(),
+  costo_unitario: z.coerce.number().min(0).optional(),
   estrategia_logistica: z.enum(ESTRATEGIAS).optional(),
 });
 

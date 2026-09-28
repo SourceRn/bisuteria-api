@@ -39,7 +39,7 @@ export const listarProductos = asyncHandler(async (req, res) => {
 
   if (buscar) {
     valores.push(`%${buscar}%`);
-    condiciones.push(`nombre ilike $${valores.length}`);
+    condiciones.push(`p.nombre ilike $${valores.length}`);
   }
   if (categoria) {
     valores.push(categoria);

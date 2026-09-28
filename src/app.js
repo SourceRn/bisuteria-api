@@ -11,6 +11,8 @@ import productosRoutes from "./routes/productosRoutes.js";
 import proveedoresRoutes from "./routes/proveedoresRoutes.js";
 import movimientosRoutes from "./routes/movimientosRoutes.js";
 import clientesAuthRoutes from "./routes/clientesAuthRoutes.js";
+import pedidosScmRoutes from "./routes/pedidosScmRoutes.js";
+import scmNivelRoutes from "./routes/scmNivelRoutes.js";
 
 export const app = express();
 
@@ -32,8 +34,8 @@ app.use("/pedidos", pedidosRoutes);
 app.use("/productos", productosRoutes);
 app.use("/proveedores", proveedoresRoutes);
 app.use("/inventario", movimientosRoutes);
-
-// TODO: cuando lleguemos a auth -> app.use("/auth", authRoutes) 
+app.use("/pedidos-scm", pedidosScmRoutes);
+app.use("/scm", scmNivelRoutes);
 
 // 404 para rutas no definidas
 app.use((req, res) => {
