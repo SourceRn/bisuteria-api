@@ -10,6 +10,7 @@ export const crearProductoSchema = z.object({
   stock_minimo: z.coerce.number().int().min(0).optional(),
   proveedor_id: z.string().uuid("proveedor_id debe ser un uuid valido").optional().nullable(),
   costo_unitario: z.coerce.number().min(0).optional(),
+  precio_venta: z.coerce.number().min(0).optional(),
   estrategia_logistica: z.enum(ESTRATEGIAS).optional(),
 });
 

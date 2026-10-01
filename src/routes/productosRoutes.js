@@ -6,11 +6,16 @@ import {
   actualizarProducto,
   actualizarEstrategiaProducto,
   eliminarProducto,
+  obtenerCatalogoPublico,
 } from "../controllers/productosController.js";
 import { listarMovimientosDeProducto } from "../controllers/movimientosController.js";
 import { requireAuth, requireAdmin } from "../middleware/auth.js";
+import { limitePublico, limiteLecturaPublica } from "../middleware/rateLimiter.js";
 
 const router = Router();
+
+// PUBLICA: catalogo para el storefront, sin necesidad de login
+router.get("/catalogo", limiteLecturaPublica, obtenerCatalogoPublico);
 
 router.use(requireAuth);
 

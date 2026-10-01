@@ -118,3 +118,38 @@ export const listarMovimientosDeProducto = asyncHandler(async (req, res) => {
 
   res.json(rows);
 });
+
+// POST /inventario/venta-publica — PUBLICA, pensada para que el checkout del
+// storefront descuente stock al confirmar un pedido. Solo acepta "salida"
+// con motivo "venta", nunca otro tipo/motivo, para no abrir una puerta trasera
+// hacia ajustes de inventario arbitrarios sin autenticacion.
+export const registrarVentaPublica = asyncHandler(async (req, res) => {
+  const { producto_id, cantidad } = req.body;
+
+  if (!producto_id || !cantidad || cantidad <= 0) {
+    throw new ApiError(400, "producto_id y cantidad (positiva) son requeridos");
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    const { producto, stockNuevo } = await registrarMovimiento(client, {
+      producto_id,
+      usuario_id: null, // venta publica, sin usuario de staff asociado
+      tipo: "salida",
+      cantidad,
+      motivo: "venta",
+    });
+
+    const pedidoGenerado = await generarPedidoPushSiAplica(client, producto, stockNuevo);
+
+    await client.query("COMMIT");
+    res.status(201).json({ ok: true, pedido_generado: pedidoGenerado });
+  } catch (err) {
+    await client.query("ROLLBACK");
+    throw err;
+  } finally {
+    client.release();
+  }
+});

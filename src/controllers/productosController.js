@@ -12,8 +12,8 @@ export const crearProducto = asyncHandler(async (req, res) => {
 
   const { rows } = await pool.query(
     `insert into productos
-       (nombre, descripcion, categoria, stock_actual, stock_minimo, proveedor_id, costo_unitario, estrategia_logistica)
-     values ($1, $2, $3, coalesce($4, 0), coalesce($5, 0), $6, coalesce($7, 0), coalesce($8, 'PULL'))
+       (nombre, descripcion, categoria, stock_actual, stock_minimo, proveedor_id, costo_unitario, precio_venta, estrategia_logistica)
+     values ($1, $2, $3, coalesce($4, 0), coalesce($5, 0), $6, coalesce($7, 0), coalesce($8, 0), coalesce($9, 'PULL'))
      returning *`,
     [
       d.nombre,
@@ -23,6 +23,7 @@ export const crearProducto = asyncHandler(async (req, res) => {
       d.stock_minimo,
       d.proveedor_id || null,
       d.costo_unitario,
+      d.precio_venta,
       d.estrategia_logistica,
     ]
   );
@@ -126,4 +127,17 @@ export const eliminarProducto = asyncHandler(async (req, res) => {
 
   if (rows.length === 0) throw new ApiError(404, "Producto no encontrado");
   res.status(204).send();
+});
+
+// GET /productos/catalogo — PUBLICO, solo campos seguros para mostrar en el storefront.
+// No expone costo_unitario, stock_minimo, proveedor_id ni estrategia_logistica.
+export const obtenerCatalogoPublico = asyncHandler(async (req, res) => {
+  const { rows } = await pool.query(
+    `select id, nombre, descripcion, categoria, precio_venta, stock_actual
+     from productos
+     where stock_actual > 0
+     order by nombre asc`
+  );
+
+  res.json(rows);
 });
