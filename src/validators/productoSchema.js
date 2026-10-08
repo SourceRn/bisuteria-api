@@ -11,6 +11,7 @@ export const crearProductoSchema = z.object({
   proveedor_id: z.string().uuid("proveedor_id debe ser un uuid valido").optional().nullable(),
   costo_unitario: z.coerce.number().min(0).optional(),
   precio_venta: z.coerce.number().min(0).optional(),
+  imagen_url: z.string().url("imagen_url debe ser una URL valida").optional().or(z.literal("")),
   estrategia_logistica: z.enum(ESTRATEGIAS).optional(),
 });
 

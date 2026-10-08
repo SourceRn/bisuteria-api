@@ -85,16 +85,27 @@ export const actualizarEstadoPedidoScm = asyncHandler(async (req, res) => {
       [estado, id]
     );
 
-    // Solo genera el movimiento de entrada la PRIMERA vez que se marca "surtido",
-    // para no duplicar stock si alguien cambia el estado varias veces.
-    if (estado === "surtido" && !yaEstabaSurtido && pedido.tipo === "reposicion") {
-      await registrarMovimiento(client, {
-        producto_id: pedido.producto_id,
-        usuario_id: req.usuario.id,
-        tipo: "entrada",
-        cantidad: pedido.cantidad,
-        motivo: "reposicion",
-      });
+    // Solo genera el movimiento la PRIMERA vez que se marca "surtido", para no
+    // duplicar efectos en el inventario si alguien cambia el estado varias veces.
+    // reposicion = entra mercancia (restock). venta = sale mercancia (se cumple el pedido).
+    if (estado === "surtido" && !yaEstabaSurtido) {
+      if (pedido.tipo === "reposicion") {
+        await registrarMovimiento(client, {
+          producto_id: pedido.producto_id,
+          usuario_id: req.usuario.id,
+          tipo: "entrada",
+          cantidad: pedido.cantidad,
+          motivo: "reposicion",
+        });
+      } else if (pedido.tipo === "venta") {
+        await registrarMovimiento(client, {
+          producto_id: pedido.producto_id,
+          usuario_id: req.usuario.id,
+          tipo: "salida",
+          cantidad: pedido.cantidad,
+          motivo: "venta",
+        });
+      }
     }
 
     await client.query("COMMIT");

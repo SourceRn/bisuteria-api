@@ -7,6 +7,7 @@ import {
   actualizarEstrategiaProducto,
   eliminarProducto,
   obtenerCatalogoPublico,
+  verificarStock
 } from "../controllers/productosController.js";
 import { listarMovimientosDeProducto } from "../controllers/movimientosController.js";
 import { requireAuth, requireAdmin } from "../middleware/auth.js";
@@ -16,6 +17,7 @@ const router = Router();
 
 // PUBLICA: catalogo para el storefront, sin necesidad de login
 router.get("/catalogo", limiteLecturaPublica, obtenerCatalogoPublico);
+router.post("/verificar-stock", limiteLecturaPublica, verificarStock);
 
 router.use(requireAuth);
 

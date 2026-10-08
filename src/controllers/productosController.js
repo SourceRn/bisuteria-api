@@ -12,8 +12,8 @@ export const crearProducto = asyncHandler(async (req, res) => {
 
   const { rows } = await pool.query(
     `insert into productos
-       (nombre, descripcion, categoria, stock_actual, stock_minimo, proveedor_id, costo_unitario, precio_venta, estrategia_logistica)
-     values ($1, $2, $3, coalesce($4, 0), coalesce($5, 0), $6, coalesce($7, 0), coalesce($8, 0), coalesce($9, 'PULL'))
+       (nombre, descripcion, categoria, stock_actual, stock_minimo, proveedor_id, costo_unitario, precio_venta, imagen_url, estrategia_logistica)
+     values ($1, $2, $3, coalesce($4, 0), coalesce($5, 0), $6, coalesce($7, 0), coalesce($8, 0), $9, coalesce($10, 'PULL'))
      returning *`,
     [
       d.nombre,
@@ -24,6 +24,7 @@ export const crearProducto = asyncHandler(async (req, res) => {
       d.proveedor_id || null,
       d.costo_unitario,
       d.precio_venta,
+      d.imagen_url || null,
       d.estrategia_logistica,
     ]
   );
@@ -133,11 +134,51 @@ export const eliminarProducto = asyncHandler(async (req, res) => {
 // No expone costo_unitario, stock_minimo, proveedor_id ni estrategia_logistica.
 export const obtenerCatalogoPublico = asyncHandler(async (req, res) => {
   const { rows } = await pool.query(
-    `select id, nombre, descripcion, categoria, precio_venta, stock_actual
+    `select id, nombre, descripcion, categoria, precio_venta, stock_actual, imagen_url
      from productos
      where stock_actual > 0
      order by nombre asc`
   );
 
   res.json(rows);
+});
+
+// POST /productos/verificar-stock — PUBLICA. Verifica si una lista de
+// productos/cantidades caben en el stock actual, SIN modificar nada.
+// Se usa en el checkout del storefront antes de confirmar una compra.
+export const verificarStock = asyncHandler(async (req, res) => {
+  const { items } = req.body; // [{ producto_id, cantidad }]
+
+  if (!Array.isArray(items) || items.length === 0) {
+    throw new ApiError(400, "items debe ser un arreglo no vacio");
+  }
+
+  const ids = items.map((i) => i.producto_id);
+  const { rows } = await pool.query(
+    `select id, nombre, stock_actual from productos where id = any($1::uuid[])`,
+    [ids]
+  );
+
+  const stockPorId = new Map(rows.map((r) => [r.id, r]));
+
+  const problemas = items
+    .map((item) => {
+      const producto = stockPorId.get(item.producto_id);
+      if (!producto) {
+        return { producto_id: item.producto_id, nombre: "Producto desconocido", motivo: "no_existe" };
+      }
+      if (item.cantidad > producto.stock_actual) {
+        return {
+          producto_id: item.producto_id,
+          nombre: producto.nombre,
+          motivo: "stock_insuficiente",
+          disponible: producto.stock_actual,
+          solicitado: item.cantidad,
+        };
+      }
+      return null;
+    })
+    .filter(Boolean);
+
+  res.json({ valido: problemas.length === 0, problemas });
 });
