@@ -58,7 +58,7 @@ export const crearUsuario = asyncHandler(async (req, res) => {
   try {
     const { rows } = await pool.query(
       `insert into usuarios (nombre, correo, rol, auth_id, activo)
-       values ($1, $2, coalesce($3, 'usuario'), $4, true)
+       values ($1, $2, coalesce($3, 'ventas'), $4, true)
        returning *`,
       [datos.nombre, datos.correo, datos.rol, data.user.id]
     );

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const ROLES = ["admin", "usuario"];
+const ROLES = ["admin", "ventas", "logistica"];
 
 export const crearUsuarioSchema = z.object({
   nombre: z.string().trim().min(2, "El nombre debe tener al menos 2 caracteres"),

@@ -42,7 +42,7 @@ export async function registrarMovimiento(client, { producto_id, usuario_id, tip
 
 // Revisa si, tras un movimiento, un producto PUSH quedo en su stock minimo o por
 // debajo, y si no tiene ya un pedido de reposicion pendiente, genera uno automatico.
-async function generarPedidoPushSiAplica(client, producto, stockNuevo) {
+export async function generarPedidoPushSiAplica(client, producto, stockNuevo) {
   if (producto.estrategia_logistica !== "PUSH") return null;
   if (stockNuevo > producto.stock_minimo) return null;
 

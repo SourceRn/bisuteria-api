@@ -44,3 +44,15 @@ export function requireAdmin(req, res, next) {
   }
   next();
 }
+
+// Deja pasar si el rol del usuario esta en la lista. El admin siempre pasa.
+// Uso: router.get("/", requireRol("ventas", "logistica"), controlador)
+export function requireRol(...roles) {
+  return (req, res, next) => {
+    const rol = req.usuario?.rol;
+    if (rol !== "admin" && !roles.includes(rol)) {
+      throw new ApiError(403, "Tu rol no tiene permiso para esta accion");
+    }
+    next();
+  };
+}

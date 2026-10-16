@@ -29,6 +29,18 @@ export function errorHandler(err, req, res, next) {
     return res.status(409).json({ error: "Ya existe un registro con ese valor unico (ej. correo)." });
   }
 
+    // Llave foranea: por ejemplo, borrar un cliente o producto que ya tiene ordenes
+  if (err.code === "23503") {
+    return res.status(409).json({
+      error: "No se puede completar: el registro esta relacionado con otros datos (por ejemplo, ordenes).",
+    });
+  }
+
+  // uuid mal formado en la URL
+  if (err.code === "22P02") {
+    return res.status(400).json({ error: "Identificador invalido" });
+  }
+
   // Nuestros errores controlados (ApiError)
   if (err.statusCode) {
     return res.status(err.statusCode).json({ error: err.message });

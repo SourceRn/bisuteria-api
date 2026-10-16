@@ -1,6 +1,6 @@
 import { pool } from "../config/db.js";
 import { crearPedidoScmSchema, actualizarEstadoPedidoScmSchema } from "../validators/pedidoScmSchema.js";
-import { registrarMovimiento } from "./movimientosController.js";
+import { registrarMovimiento, generarPedidoPushSiAplica } from "./movimientosController.js";
 import { ApiError, asyncHandler } from "../middleware/errorHandler.js";
 
 // POST /pedidos-scm  — creacion manual. Es el camino que usan los productos PULL
@@ -98,13 +98,14 @@ export const actualizarEstadoPedidoScm = asyncHandler(async (req, res) => {
           motivo: "reposicion",
         });
       } else if (pedido.tipo === "venta") {
-        await registrarMovimiento(client, {
+        const { producto, stockNuevo } = await registrarMovimiento(client, {
           producto_id: pedido.producto_id,
           usuario_id: req.usuario.id,
           tipo: "salida",
           cantidad: pedido.cantidad,
           motivo: "venta",
         });
+        await generarPedidoPushSiAplica(client, producto, stockNuevo)
       }
     }
 
