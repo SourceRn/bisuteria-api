@@ -20,3 +20,12 @@ export const limiteLecturaPublica = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+// Intentos de inicio de sesion: limite bajo para frenar fuerza bruta
+export const limiteLogin = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  message: { error: "Demasiados intentos de inicio de sesion, espera un minuto." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});

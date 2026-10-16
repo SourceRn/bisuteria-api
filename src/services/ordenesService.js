@@ -71,7 +71,7 @@ export async function crearOrden(client, { cliente_id, usuario_id, origen, items
     await registrarPaso(client, orden.id, "Creando orden", `Orden con ${lineas.length} producto(s), total $${total}`, usuario_id)
   );
 
-  return orden;
+  return { ...orden, total: Number(orden.total), folio_texto: formatearFolio(orden.folio) };
 }
 
 // Procesa una orden pendiente: valida stock, descuenta inventario (con regla PUSH),
@@ -147,7 +147,7 @@ export async function procesarOrden(client, { orden_id, usuario_id }, pasos = []
   pasos.push(await registrarPaso(client, orden_id, "Finalizando operación", `Orden ${folio} procesada`, usuario_id));
 
   return {
-    orden: { ...finalRes.rows[0], folio_texto: folio },
+    orden: { ...finalRes.rows[0], total: Number(finalRes.rows[0].total), folio_texto: folio },
     pasos,
     reposiciones_generadas: reposiciones,
   };
@@ -194,5 +194,5 @@ export async function cancelarOrden(client, orden, usuario_id) {
   const { rows } = await client.query("update ordenes set estado = 'cancelada' where id = $1 returning *", [orden.id]);
   pasos.push(await registrarPaso(client, orden.id, "Orden cancelada", `Orden ${folio} cancelada`, usuario_id));
 
-  return { orden: { ...rows[0], folio_texto: folio }, pasos };
+    return { orden: { ...rows[0], total: Number(rows[0].total), folio_texto: folio }, pasos };
 }

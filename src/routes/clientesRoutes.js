@@ -10,7 +10,7 @@ import {
 } from "../controllers/clientesController.js";
 
 import { listarInteraccionesDeCliente } from "../controllers/interaccionesController.js";
-import { requireAuth, requireAdmin } from "../middleware/auth.js";
+import { requireAuth, requireAdmin, requireRol } from "../middleware/auth.js";
 import { limitePublico } from "../middleware/rateLimiter.js";
 
 const router = Router();
@@ -21,7 +21,7 @@ router.get("/existe", limitePublico, verificarClienteExistente);
 
 // A partir de aqui, todo requiere sesion activa (uso interno del CRM)
 router.use(requireAuth);
-
+router.use(requireRol("ventas"));
 router.get("/", listarClientes);
 router.get("/:id/interacciones", listarInteraccionesDeCliente);
 router.get("/:id", obtenerCliente);

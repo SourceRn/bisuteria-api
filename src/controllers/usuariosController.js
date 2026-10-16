@@ -3,7 +3,8 @@ import { asyncHandler } from "../middleware/errorHandler.js";
 import { supabaseAdmin } from "../config/supabaseAdmin.js";
 import { crearUsuarioSchema, actualizarUsuarioSchema } from "../validators/usuarioAdminSchema.js";
 import { ApiError } from "../middleware/errorHandler.js";
-
+import { ETIQUETAS_ROL, MODULOS_POR_ROL } from "../config/permisos.js";
+import { cambiarRolSchema } from "../validators/usuarioAdminSchema.js";
 
 // GET /usuarios/me — requireAuth ya dejo el registro completo en req.usuario
 export const obtenerUsuarioActual = asyncHandler(async (req, res) => {
@@ -118,4 +119,28 @@ export const eliminarUsuario = asyncHandler(async (req, res) => {
   }
 
   res.status(204).send();
+});
+
+// GET /usuarios/rol — rol del usuario actual y modulos que puede ver (menu dinamico)
+export const obtenerMiRol = asyncHandler(async (req, res) => {
+  const { rol } = req.usuario;
+  res.json({ rol, etiqueta: ETIQUETAS_ROL[rol], modulos: MODULOS_POR_ROL[rol] || [] });
+});
+
+// PUT /usuarios/:id/rol (solo admin)
+export const cambiarRolUsuario = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { rol } = cambiarRolSchema.parse(req.body);
+
+  if (id === req.usuario.id) {
+    throw new ApiError(400, "No puedes cambiar tu propio rol");
+  }
+
+  const { rows } = await pool.query(
+    "update usuarios set rol = $1 where id = $2 returning id, nombre, correo, rol, activo",
+    [rol, id]
+  );
+  if (rows.length === 0) throw new ApiError(404, "Usuario no encontrado");
+
+  res.json(rows[0]);
 });

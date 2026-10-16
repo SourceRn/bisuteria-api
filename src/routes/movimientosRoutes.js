@@ -1,14 +1,14 @@
 import { Router } from "express";
 import { crearMovimiento, registrarVentaPublica } from "../controllers/movimientosController.js";
-import { requireAuth } from "../middleware/auth.js";
+import { requireAuth, requireRol } from "../middleware/auth.js";
 import { limitePublico } from "../middleware/rateLimiter.js";
 
 const router = Router();
 
-// PUBLICA: el checkout del storefront descuenta stock al confirmar un pedido
+// PUBLICA: el checkout actual del storefront (se retira en el Dia 5)
 router.post("/venta-publica", limitePublico, registrarVentaPublica);
 
 router.use(requireAuth);
-router.post("/movimiento", crearMovimiento);
+router.post("/movimiento", requireRol("logistica"), crearMovimiento);
 
 export default router;

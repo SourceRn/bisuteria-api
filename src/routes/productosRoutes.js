@@ -7,26 +7,26 @@ import {
   actualizarEstrategiaProducto,
   eliminarProducto,
   obtenerCatalogoPublico,
-  verificarStock
+  verificarStock,
 } from "../controllers/productosController.js";
 import { listarMovimientosDeProducto } from "../controllers/movimientosController.js";
-import { requireAuth, requireAdmin } from "../middleware/auth.js";
-import { limitePublico, limiteLecturaPublica } from "../middleware/rateLimiter.js";
+import { requireAuth, requireAdmin, requireRol } from "../middleware/auth.js";
+import { limiteLecturaPublica } from "../middleware/rateLimiter.js";
 
 const router = Router();
 
-// PUBLICA: catalogo para el storefront, sin necesidad de login
+// PUBLICAS: el storefront
 router.get("/catalogo", limiteLecturaPublica, obtenerCatalogoPublico);
 router.post("/verificar-stock", limiteLecturaPublica, verificarStock);
 
 router.use(requireAuth);
 
-router.post("/", crearProducto);
-router.get("/", listarProductos);
-router.get("/:id/movimientos", listarMovimientosDeProducto);
-router.put("/:id/estrategia", actualizarEstrategiaProducto);
-router.get("/:id", obtenerProducto);
-router.put("/:id", actualizarProducto);
+router.get("/", requireRol("ventas", "logistica"), listarProductos);
+router.post("/", requireRol("logistica"), crearProducto);
+router.get("/:id/movimientos", requireRol("logistica"), listarMovimientosDeProducto);
+router.put("/:id/estrategia", requireRol("logistica"), actualizarEstrategiaProducto);
+router.get("/:id", requireRol("ventas", "logistica"), obtenerProducto);
+router.put("/:id", requireRol("logistica"), actualizarProducto);
 router.delete("/:id", requireAdmin, eliminarProducto);
 
 export default router;

@@ -15,4 +15,8 @@ export const actualizarUsuarioSchema = z.object({
   activo: z.boolean().optional(),
 });
 
+export const cambiarRolSchema = z.object({
+  rol: z.enum(ROLES, { message: `rol debe ser uno de: ${ROLES.join(", ")}` }),
+});
+
 export const ROLES_VALIDOS = ROLES;
