@@ -144,3 +144,13 @@ export const cambiarRolUsuario = asyncHandler(async (req, res) => {
 
   res.json(rows[0]);
 });
+
+// GET /usuarios/roles — roles y los modulos de cada uno (solo admin)
+export const listarRoles = asyncHandler(async (req, res) => {
+  const roles = Object.keys(MODULOS_POR_ROL).map((rol) => ({
+    rol,
+    etiqueta: ETIQUETAS_ROL[rol],
+    modulos: MODULOS_POR_ROL[rol],
+  }));
+  res.json(roles);
+});

@@ -123,6 +123,7 @@ export const listarMovimientosDeProducto = asyncHandler(async (req, res) => {
 // storefront descuente stock al confirmar un pedido. Solo acepta "salida"
 // con motivo "venta", nunca otro tipo/motivo, para no abrir una puerta trasera
 // hacia ajustes de inventario arbitrarios sin autenticacion.
+/*
 export const registrarVentaPublica = asyncHandler(async (req, res) => {
   const { producto_id, cantidad } = req.body;
 
@@ -153,3 +154,4 @@ export const registrarVentaPublica = asyncHandler(async (req, res) => {
     client.release();
   }
 });
+*/

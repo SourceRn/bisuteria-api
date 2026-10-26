@@ -3,6 +3,7 @@ import {
   obtenerUsuarioActual,
   obtenerMiActividad,
   obtenerMiRol,
+  listarRoles,
   crearUsuario,
   actualizarUsuario,
   cambiarRolUsuario,
@@ -19,6 +20,7 @@ router.get("/", listarUsuarios);
 router.get("/me", obtenerUsuarioActual);
 router.get("/me/actividad", obtenerMiActividad);
 router.get("/rol", obtenerMiRol);
+router.get("/roles", requireAdmin, listarRoles);
 
 router.post("/", requireAdmin, crearUsuario);
 router.put("/:id/rol", requireAdmin, cambiarRolUsuario);

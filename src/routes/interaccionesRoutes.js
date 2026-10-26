@@ -1,10 +1,11 @@
 import { Router } from "express";
 import { crearInteraccion } from "../controllers/interaccionesController.js";
-import { limitePublico } from "../middleware/rateLimiter.js";
+import { requireAuth, requireRol } from "../middleware/auth.js";
 
 const router = Router();
 
-// PUBLICA: el checkout del storefront registra el pedido como interaccion, sin login
-router.post("/", limitePublico, crearInteraccion);
+router.use(requireAuth);
+router.use(requireRol("ventas"));
+router.post("/", crearInteraccion);
 
 export default router;

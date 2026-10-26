@@ -160,13 +160,15 @@ export async function crearYProcesarOrden(client, { cliente_id, usuario_id, orig
   return procesarOrden(client, { orden_id: orden.id, usuario_id }, pasos);
 }
 
-// Cancela una orden. Si ya estaba procesada, devuelve las existencias con
-// entradas de tipo "ajuste", para que el historial de inventario quede completo.
+// Cancela una orden. Si ya estaba procesada, devuelve las existencias con entradas
+// de tipo "ajuste" y cancela las reposiciones automaticas (PUSH) que dejaron de hacer falta.
 export async function cancelarOrden(client, orden, usuario_id) {
   if (orden.estado === "cancelada") throw new ApiError(400, "La orden ya esta cancelada");
 
   const pasos = [];
   const folio = formatearFolio(orden.folio);
+  let reposicionesCanceladas = [];
+  let reposicionesEnProceso = [];
 
   if (orden.estado === "procesada") {
     const itemsRes = await client.query(
@@ -184,6 +186,52 @@ export async function cancelarOrden(client, orden, usuario_id) {
     }
     pasos.push(await registrarPaso(client, orden.id, "Restituyendo inventario", "Entradas por ajuste para devolver las existencias", usuario_id));
 
+    const productoIds = itemsRes.rows.map((i) => i.producto_id);
+
+    // Con el stock restituido, las reposiciones automaticas pendientes de estos
+    // productos que ya quedaron por encima del minimo dejan de ser necesarias.
+    const canceladas = await client.query(
+      `update pedidos_scm p
+       set estado = 'cancelado',
+           notas = coalesce(p.notas || ' | ', '') || $2
+       from productos pr
+       where pr.id = p.producto_id
+         and p.producto_id = any($1::uuid[])
+         and p.usuario_id is null
+         and p.tipo = 'reposicion'
+         and p.estado = 'pendiente'
+         and pr.stock_actual > pr.stock_minimo
+       returning p.id, p.cantidad, pr.nombre as producto_nombre`,
+      [productoIds, `Cancelado automaticamente: la orden ${folio} se cancelo y el stock se restituyo`]
+    );
+    reposicionesCanceladas = canceladas.rows;
+
+    // Las "en_proceso" no se cancelan solas: solo se reportan
+    const enProceso = await client.query(
+      `select p.id, p.cantidad, pr.nombre as producto_nombre
+       from pedidos_scm p
+       join productos pr on pr.id = p.producto_id
+       where p.producto_id = any($1::uuid[])
+         and p.usuario_id is null
+         and p.tipo = 'reposicion'
+         and p.estado = 'en_proceso'
+         and pr.stock_actual > pr.stock_minimo`,
+      [productoIds]
+    );
+    reposicionesEnProceso = enProceso.rows;
+
+    if (reposicionesCanceladas.length > 0) {
+      pasos.push(
+        await registrarPaso(
+          client,
+          orden.id,
+          "Cancelando reposición automática",
+          `Reposición PUSH ya innecesaria para: ${reposicionesCanceladas.map((r) => r.producto_nombre).join(", ")}`,
+          usuario_id
+        )
+      );
+    }
+
     await client.query(
       `insert into interacciones (cliente_id, usuario_id, tipo, descripcion)
        values ($1, $2, 'Otro', $3)`,
@@ -194,5 +242,10 @@ export async function cancelarOrden(client, orden, usuario_id) {
   const { rows } = await client.query("update ordenes set estado = 'cancelada' where id = $1 returning *", [orden.id]);
   pasos.push(await registrarPaso(client, orden.id, "Orden cancelada", `Orden ${folio} cancelada`, usuario_id));
 
-    return { orden: { ...rows[0], total: Number(rows[0].total), folio_texto: folio }, pasos };
+  return {
+    orden: { ...rows[0], total: Number(rows[0].total), folio_texto: folio },
+    pasos,
+    reposiciones_canceladas: reposicionesCanceladas,
+    reposiciones_en_proceso: reposicionesEnProceso,
+  };
 }
