@@ -19,7 +19,22 @@ import erpRoutes from "./routes/erpRoutes.js";
 
 export const app = express();
 
-app.use(cors()); // en produccion, restringir a los dominios de yatzari y yatzari-crm
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:4173",
+  ...(process.env.CORS_ORIGINS?.split(",").map(o => o.trim()) ?? []),
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    console.warn(`[CORS] Bloqueado: ${origin}`);
+    return callback(null, false);   // 👈 false en vez de Error
+  },
+  credentials: true,
+}));
+
 app.use(express.json());
 
 // Ruta de salud — util para confirmar que el server esta arriba (y luego, en deploy, para el hosting)
